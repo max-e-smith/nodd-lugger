@@ -102,25 +102,44 @@ func resolveBathySurveys(surveys []string) []string {
 	// noaa-dcdb-bathymetry-pds.s3.amazonaws.com
 	bucket := "noaa-dcdb-bathymetry-pds"
 
-	result, err := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+	pt, ptErr := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
-		Prefix:    aws.String("mb/ships/"),
+		Prefix:    aws.String("mb/"),
 		Delimiter: aws.String("/"),
 	})
-	if err != nil {
+
+	if ptErr != nil {
 		log.Fatal(err)
 		return []string{}
 	}
 
-	log.Println("first page results:")
-	//for _, object := range result.Contents {
-	//	log.Printf("key=%s size=%d", aws.ToString(object.Key), *object.Size)
-	//}
-	for _, platform := range result.CommonPrefixes {
-		fmt.Printf(" - %s\n", *platform.Prefix)
+	for _, platformType := range pt.CommonPrefixes {
+		fmt.Printf("scanning - %s\n platform types", *platformType.Prefix)
+
+		platformResults, pErr := client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+			Bucket:    aws.String(bucket),
+			Prefix:    aws.String("mb/ships/"),
+			Delimiter: aws.String("/"),
+		})
+
+		if pErr != nil {
+			log.Fatal(err)
+			return []string{}
+		}
+
+		log.Println("first page results:")
+
+		for _, platform := range platformResults.CommonPrefixes {
+			fmt.Printf(" - %s\n", *platform.Prefix)
+		}
+
 	}
 
 	var paths []string
+
+	//for _, object := range result.Contents {
+	//	log.Printf("key=%s size=%d", aws.ToString(object.Key), *object.Size)
+	//}
 
 	return paths
 }
