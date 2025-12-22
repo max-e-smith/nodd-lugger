@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -222,24 +223,43 @@ func downloadFiles(prefixes []string, targetDir string, bucket string, client s3
 			}
 
 			for _, object := range page.Contents {
-				filename := path.Join(targetDir, path.Base(*object.Key))
-				DownloadLargeObject(bucket, *object.Key, client, filename)
+				DownloadLargeObject(bucket, *object.Key, client, path.Join(targetDir, *object.Key))
 			}
 
 		}
 	}
 }
 
-func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, targetFile string) {
-	downloader := manager.NewDownloader(&client)
+func createFileWithParents(targetFile string) (*os.File, error) {
+	dir := filepath.Dir(targetFile)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, fmt.Errorf("Error creating directory %s: %s", dir, err)
+	}
 
 	file, err := os.Create(targetFile)
 	if err != nil {
-		fmt.Printf("Unable to create local file %s", targetFile)
+		return nil, fmt.Errorf("Unable to create local file %s", targetFile)
+	}
+
+	return file, nil
+}
+
+func closeFileChecked(file *os.File) {
+	err := file.Close()
+	if err != nil {
+		fmt.Printf("Error closing file: %s\n", err)
+	}
+}
+
+func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, targetFile string) {
+	file, err := createFileWithParents(targetFile)
+	if err != nil {
+		log.Fatal(err)
 		return
 	}
-	defer file.Close()
+	defer closeFileChecked(file)
 
+	downloader := manager.NewDownloader(&client)
 	n, err := downloader.Download(context.TODO(), file, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
@@ -252,7 +272,6 @@ func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, 
 
 	fmt.Printf("Successfully downloaded %d bytes to %s\n", n, targetFile)
 	return
-
 }
 
 func resolveBathySurveys(inputSurveys []string, client s3.Client, bucket string) []string {
