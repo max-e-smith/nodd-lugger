@@ -11,16 +11,21 @@ import (
 	"github.com/ricochet2200/go-disk-usage/du"
 	"github.com/spf13/cobra"
 	"log"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var bathy bool
 var wcd bool
 var trackline bool
+
+const GB = 1000 * 1000 * 1000
+const GiB = 1024 * 1024 * 1024
 
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -157,18 +162,24 @@ func diskSpaceCheck(rootPaths []string, targetPath string, client s3.Client, buc
 		totalSurveysSize = 0
 	}
 
-	fmt.Printf("  total download size: %fGB\n", float64(totalSurveysSize)/(1024*1024*1024))
-	fmt.Printf("  disk space available: %fGB\n", float64(availableSpace)/(1024*1024*1024))
+	fmt.Printf("  total download size: %gGB\n", byteToGB(totalSurveysSize))
+	fmt.Printf("  disk space available: %gGB\n", byteToGB(int64(availableSpace)))
 
 	if availableSpace > uint64(totalSurveysSize) {
-		fmt.Println("  continuing...")
 		return true
 	}
 
 	return false
 }
 
+func stopDownloadTimer(start time.Time) {
+	fmt.Printf("Download completed in %g hours.\n", hoursSince(start))
+}
+
 func downloadBathySurveys(surveys []string, targetPath string) {
+	start := time.Now()
+	defer stopDownloadTimer(start)
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
 		config.WithRegion("us-east-1"),
@@ -202,7 +213,7 @@ func downloadBathySurveys(surveys []string, targetPath string) {
 		return
 	}
 
-	fmt.Println("Downloading survey files to ", targetPath)
+	fmt.Printf("Downloading survey files to %s...\n", targetPath)
 	downloadFiles(surveyRoots, targetPath, bucket, *client)
 
 	fmt.Println("bathymetry data downloaded.")
@@ -210,7 +221,7 @@ func downloadBathySurveys(surveys []string, targetPath string) {
 
 func downloadFiles(prefixes []string, targetDir string, bucket string, client s3.Client) {
 	for _, survey := range prefixes {
-		var fileDownloadPageSize int32 = 4
+		var fileDownloadPageSize int32 = 10
 
 		params := &s3.ListObjectsV2Input{
 			Bucket:  aws.String(bucket),
@@ -221,7 +232,6 @@ func downloadFiles(prefixes []string, targetDir string, bucket string, client s3
 		filePaginator := s3.NewListObjectsV2Paginator(&client, params)
 		for filePaginator.HasMorePages() {
 			page, err := filePaginator.NextPage(context.TODO())
-			fmt.Printf("downloading %d files...\n", len(page.Contents))
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -240,12 +250,12 @@ func downloadFiles(prefixes []string, targetDir string, bucket string, client s3
 func createFileWithParents(targetFile string) (*os.File, error) {
 	dir := filepath.Dir(targetFile)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		return nil, fmt.Errorf("Error creating directory %s: %s", dir, err)
+		return nil, fmt.Errorf("error creating directory %s: %s", dir, err)
 	}
 
 	file, err := os.Create(targetFile)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create local file %s", targetFile)
+		return nil, fmt.Errorf("unable to create local file %s", targetFile)
 	}
 
 	return file, nil
@@ -258,6 +268,21 @@ func closeFileChecked(file *os.File) {
 	}
 }
 
+func byteToGB(bytes int64) float64 {
+	gb := float64(bytes) / GB
+	return math.Trunc(gb*100) / 100
+}
+
+func minutesSince(start time.Time) float64 {
+	seconds := time.Since(start).Seconds()
+	return math.Trunc(seconds*100) / 100
+}
+
+func hoursSince(start time.Time) float64 {
+	seconds := time.Since(start).Hours()
+	return math.Trunc(seconds*100) / 100
+}
+
 func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, targetFile string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -267,6 +292,8 @@ func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, 
 		return
 	}
 	defer closeFileChecked(file)
+
+	start := time.Now()
 
 	downloader := manager.NewDownloader(&client)
 	n, err := downloader.Download(context.TODO(), file, &s3.GetObjectInput{
@@ -279,7 +306,7 @@ func DownloadLargeObject(bucketName string, objectKey string, client s3.Client, 
 		return
 	}
 
-	fmt.Printf("Successfully downloaded %d bytes to %s\n", n, targetFile)
+	fmt.Printf("Successfully downloaded %g GB to %s in %g minutes.\n", byteToGB(n), targetFile, minutesSince(start))
 	return
 }
 
