@@ -32,22 +32,17 @@ func GetAvailableDiskSpace(localPath string) uint64 {
 	return usage.Available() // bytes
 }
 
-func VerifyTarget(path string) bool {
+func VerifyTarget(path string) error {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			fmt.Printf("Target download path %s does not exist.\n", path)
-			return false
+			return fmt.Errorf("Target download path %s does not exist.\n", path)
 		}
-
-		fmt.Printf("Error validating target path %s: %s\n", path, err)
-		return false
+		return fmt.Errorf("Error validating target path %s: %s\n", path, err)
 	}
 
-	if fileInfo.IsDir() {
-		return true
-	} else {
-		fmt.Printf("%s is not a directory!\n", path)
+	if !fileInfo.IsDir() {
+		return fmt.Errorf("%s is not a directory!\n", path)
 	}
 
 	mode := fileInfo.Mode()
@@ -57,18 +52,15 @@ func VerifyTarget(path string) bool {
 	userCanWrite := mode&0200 != 0
 
 	if userCanRead && userCanWrite {
-		return true
+		return nil
 	}
 
 	if !userCanRead && !userCanWrite {
-		fmt.Printf("user lacks both read and write permissions for: %s", path)
-		return false
+		return fmt.Errorf("user lacks both read and write permissions for: %s", path)
 	} else if !userCanRead {
-		fmt.Printf("user lacks read permission for: %s", path)
-		return false
+		return fmt.Errorf("user lacks read permission for: %s", path)
 	} else {
-		fmt.Printf("user lacks write permission for: %s", path)
-		return false
+		return fmt.Errorf("user lacks write permission for: %s", path)
 	}
 }
 

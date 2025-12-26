@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"log"
+	"path"
 	"sync"
 	"time"
 )
@@ -34,7 +35,35 @@ func GetDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string)
 	return totalSurveysSize, nil
 }
 
-func DownloadLargeObject(bucket string, objectKey string, client s3.Client, targetFile string, wg *sync.WaitGroup) {
+func DownloadFiles(bucket string, prefixes []string, targetDir string, s3client s3.Client) {
+	for _, survey := range prefixes {
+		var fileDownloadPageSize int32 = 10
+
+		params := &s3.ListObjectsV2Input{
+			Bucket:  aws.String(bucket),
+			Prefix:  aws.String(survey),
+			MaxKeys: aws.Int32(fileDownloadPageSize),
+		}
+
+		filePaginator := s3.NewListObjectsV2Paginator(&s3client, params)
+		for filePaginator.HasMorePages() {
+			page, err := filePaginator.NextPage(context.TODO())
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			var wg sync.WaitGroup
+			for _, object := range page.Contents {
+				wg.Add(1)
+				go downloadLargeObject(bucket, *object.Key, s3client, path.Join(targetDir, *object.Key), &wg)
+			}
+			wg.Wait()
+		}
+	}
+}
+
+func downloadLargeObject(bucket string, objectKey string, client s3.Client, targetFile string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	file, err := createFileWithParents(targetFile)

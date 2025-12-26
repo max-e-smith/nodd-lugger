@@ -2,6 +2,7 @@ package get
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -10,10 +11,6 @@ import (
 	"github.com/max-e-smith/cruise-lug/cmd/common"
 	"github.com/max-e-smith/cruise-lug/cmd/gets/dcdb"
 	"github.com/spf13/cobra"
-	"log"
-	"path"
-	"sync"
-	"time"
 )
 
 var multibeam bool
@@ -22,7 +19,6 @@ var wcd bool
 var trackline bool
 
 var s3client s3.Client
-var bucket = "noaa-dcdb-bathymetry-pds" // noaa-dcdb-bathymetry-pds.s3.amazonaws.com/index.html
 
 var cruiseCmd = &cobra.Command{
 	Use:   "cruise",
@@ -34,43 +30,60 @@ var cruiseCmd = &cobra.Command{
 		the survey(s) you want to download and a local path to download data to. The path must exist and 
 		have the necessary permissions.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var length = len(args)
-		if length <= 1 {
-			fmt.Println("Please specify survey name(s) and a target file path.")
-			fmt.Println(cmd.UsageString())
-			return
-
-		}
-
-		var path = args[length-1]
-		var surveys = args[:length-1]
-
-		if !multibeam && !wcd && !trackline {
-			fmt.Println("Please specify data type(s) for download.")
+		targetPath, surveys, argsErr := getArgs(args)
+		if argsErr != nil {
+			fmt.Println(argsErr)
 			fmt.Println(cmd.UsageString())
 			return
 		}
 
-		download(surveys, path)
+		err := verifyUsage(targetPath)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println(cmd.UsageString())
+			return
+		}
+
+		if multibeam {
+			surveys, resolveErr := dcdb.ResolveMultibeamSurveys(surveys, s3client)
+			if resolveErr != nil {
+				fmt.Println(resolveErr)
+				return
+			}
+
+			bytes, estimateErr := common.GetDiskUsageEstimate(dcdb.Bucket, s3client, surveys)
+			if estimateErr != nil {
+				fmt.Println(err)
+				return
+			}
+
+			spaceErr := diskSpaceCheck(bytes, targetPath)
+			if spaceErr != nil {
+				fmt.Println("Specified path does not have enough disk space available.")
+				return
+			}
+
+			dcdb.DownloadBathySurveys(surveys, targetPath, s3client)
+		}
+
+		if crowdsourced {
+		} // TODO
+
+		if wcd {
+		} // TODO
+
+		if trackline {
+		} // TODO
 
 		fmt.Println("Done.")
+
+		return
 	},
 }
 
 func init() {
 	cmd.GetCmd.AddCommand(cruiseCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// cruiseCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// cruiseCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	// Local flags
 	cruiseCmd.Flags().BoolVarP(&multibeam, "multibeam-bathy", "m", false, "Download multibeam bathy data")
 	cruiseCmd.Flags().BoolVarP(&crowdsourced, "crowdsourced-bathy", "c", false, "Download crowdsourced bathy data")
 	cruiseCmd.Flags().BoolVarP(&wcd, "water-column", "w", false, "Download water column data")
@@ -90,106 +103,44 @@ func init() {
 	s3client = *s3.NewFromConfig(cfg)
 }
 
-func download(surveys []string, targetPath string) {
-	if !common.VerifyTarget(targetPath) {
-		fmt.Printf("Quitting.")
-		return
+func getArgs(args []string) (string, []string, error) {
+	var length = len(args)
+	if length <= 1 {
+		return "", nil, errors.New("Please specify survey name(s) and a target file path.")
 	}
 
-	if multibeam {
-		downloadBathySurveys(surveys, targetPath)
-	}
+	var targetPath = args[length-1]
+	var surveys = args[:length-1]
 
-	if crowdsourced {
-	} // TODO
-
-	if wcd {
-	} // TODO
-
-	if trackline {
-	} // TODO
-
-	return
+	return targetPath, surveys, nil
 }
 
-func diskSpaceCheck(rootPaths []string, targetPath string) bool {
+func verifyUsage(targetPath string) error {
+	if !multibeam && !wcd && !trackline {
+		return fmt.Errorf("please specify data type(s) for download")
+	}
+
+	targetError := common.VerifyTarget(targetPath)
+	if targetError != nil {
+		return targetError
+	}
+	return nil
+}
+
+func diskSpaceCheck(surveyBytes int64, targetPath string) error {
+	fmt.Println("Checking available disk space")
+	if surveyBytes < 0 {
+		surveyBytes = 0
+	}
+
 	availableSpace := common.GetAvailableDiskSpace(targetPath)
-	totalSurveysSize, err := common.GetDiskUsageEstimate(bucket, s3client, rootPaths)
 
-	if err != nil {
-		log.Fatal(err)
-		return false
-	}
-
-	if totalSurveysSize < 0 {
-		totalSurveysSize = 0
-	}
-
-	fmt.Printf("  total download size: %gGB\n", common.ByteToGB(totalSurveysSize))
+	fmt.Printf("  total download size: %gGB\n", common.ByteToGB(surveyBytes))
 	fmt.Printf("  disk space available: %gGB\n", common.ByteToGB(int64(availableSpace)))
 
-	if availableSpace > uint64(totalSurveysSize) {
-		return true
+	if availableSpace > uint64(surveyBytes) {
+		return nil
 	}
 
-	return false
-}
-
-func logDownloadTime(start time.Time) {
-	fmt.Printf("Download completed in %g hours.\n", common.HoursSince(start))
-}
-
-func downloadBathySurveys(surveys []string, targetPath string) {
-	start := time.Now()
-	defer logDownloadTime(start)
-
-	fmt.Println("Resolving bathymetry data for specified surveys: ", surveys)
-	var surveyRoots = dcdb.ResolveMultibeamSurveys(surveys, bucket, s3client)
-
-	if len(surveyRoots) == 0 {
-		fmt.Println("No surveys found.")
-		return
-	} else {
-		fmt.Printf("Found %d of %d wanted surveys at: %s\n", len(surveyRoots), len(surveys), surveyRoots)
-		// TODO additional verification of survey match results
-	}
-
-	fmt.Println("Checking available disk space")
-	if !diskSpaceCheck(surveyRoots, targetPath) {
-		fmt.Println("Specified path does not have enough disk space available.")
-		return
-	}
-
-	fmt.Printf("Downloading survey files to %s...\n", targetPath)
-	downloadFiles(surveyRoots, targetPath)
-
-	fmt.Println("bathymetry data downloaded.")
-}
-
-func downloadFiles(prefixes []string, targetDir string) {
-	for _, survey := range prefixes {
-		var fileDownloadPageSize int32 = 10
-
-		params := &s3.ListObjectsV2Input{
-			Bucket:  aws.String(bucket),
-			Prefix:  aws.String(survey),
-			MaxKeys: aws.Int32(fileDownloadPageSize),
-		}
-
-		filePaginator := s3.NewListObjectsV2Paginator(&s3client, params)
-		for filePaginator.HasMorePages() {
-			page, err := filePaginator.NextPage(context.TODO())
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-
-			var wg sync.WaitGroup
-			for _, object := range page.Contents {
-				wg.Add(1)
-				go common.DownloadLargeObject(bucket, *object.Key, s3client, path.Join(targetDir, *object.Key), &wg)
-			}
-			wg.Wait()
-		}
-	}
+	return fmt.Errorf("not enough available space")
 }
