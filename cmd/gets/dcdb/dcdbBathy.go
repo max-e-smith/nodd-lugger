@@ -22,9 +22,8 @@ func DownloadBathySurveys(surveys []string, targetPath string, s3client s3.Clien
 	start := time.Now()
 	defer logDownloadTime(start)
 
-	fmt.Printf("Downloading survey files to %s...\n", targetPath)
-	common.DownloadFiles(Bucket, surveys, targetPath, s3client)
-	fmt.Println("bathymetry data downloaded.")
+	order := common.DownloadOrder{Bucket: Bucket, Prefixes: surveys, Client: s3client, TargetDir: targetPath, WorkerCount: 5}
+	order.DownloadFiles()
 }
 
 func ResolveMultibeamSurveys(inputSurveys []string, s3client s3.Client) ([]string, error) {

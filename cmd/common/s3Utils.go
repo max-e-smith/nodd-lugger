@@ -35,17 +35,26 @@ func GetDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string)
 	return totalSurveysSize, nil
 }
 
-func DownloadFiles(bucket string, prefixes []string, targetDir string, s3client s3.Client) {
-	for _, survey := range prefixes {
+type DownloadOrder struct {
+	Bucket      string
+	Prefixes    []string
+	Client      s3.Client
+	TargetDir   string
+	WorkerCount int
+}
+
+func (manifest DownloadOrder) DownloadFiles() {
+	fmt.Printf("Downloading files to %s...\n", manifest.TargetDir)
+	for _, survey := range manifest.Prefixes {
 		var fileDownloadPageSize int32 = 10
 
 		params := &s3.ListObjectsV2Input{
-			Bucket:  aws.String(bucket),
+			Bucket:  aws.String(manifest.Bucket),
 			Prefix:  aws.String(survey),
 			MaxKeys: aws.Int32(fileDownloadPageSize),
 		}
 
-		filePaginator := s3.NewListObjectsV2Paginator(&s3client, params)
+		filePaginator := s3.NewListObjectsV2Paginator(&manifest.Client, params)
 		for filePaginator.HasMorePages() {
 			page, err := filePaginator.NextPage(context.TODO())
 			if err != nil {
@@ -56,10 +65,11 @@ func DownloadFiles(bucket string, prefixes []string, targetDir string, s3client 
 			var wg sync.WaitGroup
 			for _, object := range page.Contents {
 				wg.Add(1)
-				go downloadLargeObject(bucket, *object.Key, s3client, path.Join(targetDir, *object.Key), &wg)
+				go downloadLargeObject(manifest.Bucket, *object.Key, manifest.Client, path.Join(manifest.TargetDir, *object.Key), &wg)
 			}
 			wg.Wait()
 		}
+		fmt.Println("files downloaded.")
 	}
 }
 
