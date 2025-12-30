@@ -6,12 +6,31 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/briandowns/spinner"
 	"github.com/spf13/viper"
 	"log"
 	"path"
 	"sync"
 	"time"
 )
+
+var spin *spinner.Spinner
+
+type Order struct {
+	Bucket      string
+	Prefixes    []string
+	Client      s3.Client
+	TargetDir   string
+	WorkerCount int
+}
+
+type Download struct {
+	Bucket     string
+	ObjectKey  string
+	TargetFile string
+	Client     s3.Client
+	WaitGroup  *sync.WaitGroup
+}
 
 func GetDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string) (int64, error) {
 	var totalSurveysSize int64 = 0
@@ -36,29 +55,14 @@ func GetDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string)
 	return totalSurveysSize, nil
 }
 
-type Order struct {
-	Bucket      string
-	Prefixes    []string
-	Client      s3.Client
-	TargetDir   string
-	WorkerCount int
-}
-
-type Download struct {
-	Bucket     string
-	ObjectKey  string
-	TargetFile string
-	Client     s3.Client
-	WaitGroup  *sync.WaitGroup
-}
-
 func (order Order) DownloadFiles() error {
-	fmt.Printf("Downloading files to %s...\n", order.TargetDir)
+	fmt.Printf("Downloading files to: %s\n", order.TargetDir)
+	spin = spinner.New(spinner.CharSets[24], 100*time.Millisecond)
+	spin.Start()
 
 	var wg sync.WaitGroup
 	downloads := make(chan Download, order.WorkerCount*2)
 
-	fmt.Printf("Starting %d workers\n", order.WorkerCount)
 	for i := 1; i <= order.WorkerCount; i++ {
 		wg.Add(1)
 		go downloadWorker(downloads, &wg)
@@ -90,11 +94,13 @@ func (order Order) DownloadFiles() error {
 				}
 			}
 		}
-		fmt.Println("  files downloaded.")
 	}
 
 	close(downloads)
 	wg.Wait()
+	spin.Stop()
+
+	fmt.Println("  files downloaded.")
 
 	return nil
 }
@@ -123,12 +129,16 @@ func downloadLargeObject(bucket string, objectKey string, client s3.Client, targ
 	})
 
 	if err != nil {
+		spin.Stop()
 		fmt.Printf("failed to download file: %w", err)
+		spin.Restart()
 		return
 	}
 
 	if viper.GetBool("verbose") {
-		fmt.Printf("Successfully downloaded %g GB to %s in %g minutes.\n", ByteToGB(n), targetFile, MinutesSince(start))
+		spin.Stop()
+		fmt.Printf("  successfully downloaded %g GB to %s in %g minutes.\n", ByteToGB(n), targetFile, MinutesSince(start))
+		spin.Restart()
 	}
 
 	return
