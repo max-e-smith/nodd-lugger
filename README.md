@@ -16,10 +16,12 @@ TODO
 FUTURE
 
 ## usage
-clug [command] [options] [survey] [local_path]
+lug [command] [options] [parameters] [target]
 
 Commands
-- get
+- mb
+- csb
+- wcd
 - config
 - update
 
