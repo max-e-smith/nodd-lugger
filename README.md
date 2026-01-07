@@ -1,4 +1,4 @@
-# nodd-lug
+# nodd-lugger
 
 CLI tool for downloading datasets from the NOAA Open Data Dissemenation (NODD) hosted cloud using domain driven criterion.
 
