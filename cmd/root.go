@@ -7,31 +7,38 @@ import (
 	"os"
 )
 
-var verbose bool
-var check bool
 var background bool
+var verbose bool
+var diskCheck bool
+var dryRun bool
 var parallel int
-var source string
-var manifest string
-var direct string
-var try bool
 
 var RootCmd = &cobra.Command{
 	Use:   "clug",
-	Short: "A domain driven retrieval tool for cruise-based datasets",
-	Long: `A CLI library for downloading ocean data using domain driven criteria using
-	direct access options such as the NOAA Open Data Dissemination (NODD) cloud.
+	Short: "A client side retrieval tool for accessible cruise-based datasets",
+	Long: `A CLI library for downloading ocean data using a noaa provided manifest or domain driven criteria sourced
+	directly from openly accessible options such as the NOAA Open Data Dissemination (NODD) cloud.
 
-	mb, will download all multibeam bathymetry data files when given a survey name argument(s), 
-	path (prefix), or file manifest.
+	Subcommands:
+	mb: will resolve and download multibeam bathymetry data files based on survey name, cloud path, or file manifest.
 
-	csb, will download all crowdsourced bathymetry data files when given a survey name argument(s), 
-	path (prefix), or file manifest.
+	csb: will resolve and download crowdsourced bathymetry data files based on survey name, cloud path, or file manifest.
 
-	wcd, will download all water column data files when given a survey name argument(s), 
-	path (prefix), or file manifest.
+	wcd: will resolve and download water column data data files based on survey name, cloud path, or file manifest.
 
-	help, provides usage information for each subcommand.
+	help: provides usage information for each subcommand.
+
+	Global options:
+		-b --background (default: false)
+			runs the download process in the background.
+		-c --space-check (default: false)
+			will attempting checking target's disk space before downloading.
+		-v --verbose (default: false)
+			includes additional output in the console.
+		-d --dry-run (default: false)
+			will perform a dry run of command, skipping file download.	
+		-p --parallel <number> (default: 3)
+			determines the number of parallel downloads for a request.
 	`,
 }
 
@@ -43,53 +50,48 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Display more verbose output in console output. (default: false)")
-	RootCmd.PersistentFlags().IntVarP(&parallel, "parallel", "p", 3, "Number of parallel downloads. (default: 3, max: 100)")
-	RootCmd.PersistentFlags().BoolVarP(&check, "check", "c", false, "Check local disk space before downloading. (default: true)")
-	RootCmd.PersistentFlags().BoolVarP(&background, "background", "b", false, "Run in background mode. (default: false)")
-	RootCmd.PersistentFlags().StringVarP(&source, "source", "s", "", "Define direct data access source. (default: NODD)")
-	RootCmd.PersistentFlags().StringVarP(&manifest, "manifest", "m", "", "Direct file download by providing a valid manifest. (default: none")
-	RootCmd.PersistentFlags().StringVarP(&direct, "direct", "d", "", "Direct file download by providing a valid direct path. (default: none)")
-	RootCmd.PersistentFlags().BoolVarP(&try, "try", "t", false, "Perform a dry run of command without actually downloading anything. (default: false)")
+	// add subcommands
+	RootCmd.AddCommand(mbCmd)
+	RootCmd.AddCommand(csbCmd)
+	RootCmd.AddCommand(wcdCmd)
 
-	vErr := viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
-	if vErr != nil {
-		log.Fatal(vErr)
-	}
+	// behavioral switches
+	RootCmd.PersistentFlags().BoolVarP(&background, "background", "b", false,
+		"Run download processes in the background. (default: false)")
+	RootCmd.PersistentFlags().BoolVarP(&diskCheck, "space-check", "s", false,
+		"Check local disk space before downloading. (default: false)")
+	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false,
+		"Display more verbose output in console output. (default: false)")
+	RootCmd.PersistentFlags().BoolVarP(&dryRun, "dry-run", "d", false,
+		"Perform a dry run of command, skipping file download. (default: false)")
 
-	pErr := viper.BindPFlag("parallel", RootCmd.PersistentFlags().Lookup("parallel"))
-	if pErr != nil {
-		log.Fatal(pErr)
-	}
+	RootCmd.MarkFlagsMutuallyExclusive("background", "verbose")
+	RootCmd.MarkFlagsMutuallyExclusive("background", "dry-run")
 
-	cErr := viper.BindPFlag("check", RootCmd.PersistentFlags().Lookup("check"))
-	if cErr != nil {
-		log.Fatal(cErr)
-	}
+	// behavioral config
+	RootCmd.PersistentFlags().IntVarP(&parallel, "parallel", "p", 3,
+		"Number of parallel downloads. (default: 3, max: 100)")
 
+	// add option bindings to config
 	bErr := viper.BindPFlag("background", RootCmd.PersistentFlags().Lookup("background"))
 	if bErr != nil {
 		log.Fatal(bErr)
 	}
-
-	sErr := viper.BindPFlag("source", RootCmd.PersistentFlags().Lookup("source"))
-	if sErr != nil {
-		log.Fatal(sErr)
+	cErr := viper.BindPFlag("space-check", RootCmd.PersistentFlags().Lookup("space-check"))
+	if cErr != nil {
+		log.Fatal(cErr)
 	}
-
-	mErr := viper.BindPFlag("manifest", RootCmd.PersistentFlags().Lookup("manifest"))
-	if mErr != nil {
-		log.Fatal(mErr)
+	vErr := viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
+	if vErr != nil {
+		log.Fatal(vErr)
 	}
-
-	dErr := viper.BindPFlag("direct", RootCmd.PersistentFlags().Lookup("direct"))
-	if dErr != nil {
-		log.Fatal(dErr)
-	}
-
-	tErr := viper.BindPFlag("try", RootCmd.PersistentFlags().Lookup("try"))
+	tErr := viper.BindPFlag("dry-run", RootCmd.PersistentFlags().Lookup("dry-run"))
 	if tErr != nil {
 		log.Fatal(tErr)
+	}
+	pErr := viper.BindPFlag("parallel", RootCmd.PersistentFlags().Lookup("parallel"))
+	if pErr != nil {
+		log.Fatal(pErr)
 	}
 
 }
