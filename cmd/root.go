@@ -51,10 +51,10 @@ func Execute() {
 
 func init() {
 	// add subcommands
+	RootCmd.AddCommand(orderCmd)
 	RootCmd.AddCommand(mbCmd)
 	RootCmd.AddCommand(csbCmd)
 	RootCmd.AddCommand(wcdCmd)
-	RootCmd.AddCommand()
 
 	// behavioral switches
 	RootCmd.PersistentFlags().BoolVarP(&background, "background", "b", false,
