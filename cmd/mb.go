@@ -21,39 +21,37 @@ var s3client s3.Client
 var mbCmd = &cobra.Command{
 	Use:   "mb",
 	Short: "Handles multibeam bathymetry data requests",
-	Long: `A cruise-lug command for downloading multibeam bathymetry
-		   data.
+	Long: `A cruise-lug command for downloading multibeam bathymetry data.
 
-			Usage:
-				clug mb <source> <access> <options> <arguments> <target directory>
+Usage:
+	clug mb <source> <access> <options> <arguments> <target directory>
 
-			Source Options (one is required):
-				--sourceNodd: download multibeam bathymetry data from NODD using survey or path criteria.
-				--sourceNccf: download multibeam bathymetry data from NOAA cloud archive (future) using survey or path criteria.
+Source Options (one is required):
+	--nodd: download multibeam bathymetry data from NODD using survey or path criteria.
+	--nccf: download multibeam bathymetry data from NOAA cloud archive (future) using survey or path criteria.
 
-			Access Options (one is required):
-				--survey <survey name(s); space separated>. 
-					Specify a valid survey name or list of survey names to download from NODD.
-				--path <path(s); space separated>.
-					Specify a valid path or list of path prefixes to download from NODD.
+Access Options (one is required):
+	--survey <survey name(s); space separated>. 
+		Specify a valid survey name or list of survey names to download from NODD.
+	--path <path(s); space separated>.
+		Specify a valid path or list of path prefixes to download from NODD.
 
-			Global options:
-				-b --background (default: false)
-					runs the download process in the background.
-				-c --space-check (default: false)
-					will attempting checking target's disk space before downloading.
-				-v --verbose (default: false)
-					includes additional output in the console.
-				-d --dry-run (default: false)
-					will perform a dry run of command, skipping file download.	
-				-p --parallel <number> (default: 3)
-					determines the number of parallel downloads for a request.
-			`,
+Options:
+	-b --background (default: false)
+		runs the download process in the background.
+	-c --space-check (default: false)
+		will attempting checking target's disk space before downloading.
+	-v --verbose (default: false)
+		includes additional output in the console.
+	-d --dry-run (default: false)
+		will perform a dry run of command, skipping file download.	
+	-p --parallel <number> (default: 3)
+		determines the number of parallel downloads for a request.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if sourceNodd && !sourceNccf {
 			s3client = nodd.NewNoddClient()
 		} else if sourceNccf {
-			return fmt.Errorf("sourceNccf not yet implemented")
+			return fmt.Errorf("nccf as a data source has not yet been implemented")
 		}
 		return nil // continue
 	},
@@ -76,18 +74,18 @@ var mbCmd = &cobra.Command{
 
 func init() {
 	// data source options
-	mbCmd.Flags().BoolVar(&sourceNodd, "sourceNodd", false, "Resolve data from NODD cloud archive.")
-	mbCmd.Flags().BoolVar(&sourceNccf, "sourceNccf", false, "Resolve data from NOAA cloud archive (future).")
+	mbCmd.Flags().BoolVar(&sourceNodd, "nodd", false, "Resolve data from NODD cloud archive.")
+	mbCmd.Flags().BoolVar(&sourceNccf, "nccf", false, "Resolve data from NOAA cloud archive (future).")
 
 	// data access options
-	mbCmd.Flags().BoolVar(&survey, "survey", false,
-		"Resolve and download files based on survey name(s).")
-	mbCmd.Flags().BoolVar(&path, "path", false,
-		"Resolve and download files based on valid cloud path(s).")
+	mbCmd.Flags().BoolVar(&survey, "survey", false, "Resolve and download files based on survey name(s).")
+	mbCmd.Flags().BoolVar(&path, "path", false, "Resolve and download files based on valid cloud path(s).")
 
 	mbCmd.MarkFlagsOneRequired("survey", "path")
-	mbCmd.MarkFlagsMutuallyExclusive("manifest", "survey", "path")
-	mbCmd.MarkFlagsMutuallyExclusive("sourceNodd", "sourceNccf")
+	mbCmd.MarkFlagsMutuallyExclusive("survey", "path")
+
+	mbCmd.MarkFlagsOneRequired("nodd", "nccf")
+	mbCmd.MarkFlagsMutuallyExclusive("nodd", "nccf")
 
 	// bind config
 	sErr := viper.BindPFlag("survey", RootCmd.PersistentFlags().Lookup("survey"))
@@ -99,6 +97,17 @@ func init() {
 	if pErr != nil {
 		log.Fatal(pErr)
 	}
+
+	noddErr := viper.BindPFlag("nodd", mbCmd.Flags().Lookup("nodd"))
+	if noddErr != nil {
+		log.Fatal(noddErr)
+	}
+
+	nccfErr := viper.BindPFlag("nccf", mbCmd.Flags().Lookup("nccf"))
+	if nccfErr != nil {
+		log.Fatal(nccfErr)
+	}
+
 }
 
 func parseMbArgs(cmd *cobra.Command, args []string) (string, []string) {
