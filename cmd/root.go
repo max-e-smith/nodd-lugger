@@ -54,6 +54,7 @@ func init() {
 	RootCmd.AddCommand(mbCmd)
 	RootCmd.AddCommand(csbCmd)
 	RootCmd.AddCommand(wcdCmd)
+	RootCmd.AddCommand()
 
 	// behavioral switches
 	RootCmd.PersistentFlags().BoolVarP(&background, "background", "b", false,
@@ -94,4 +95,15 @@ func init() {
 		log.Fatal(pErr)
 	}
 
+}
+
+func getWorkersConfig() int {
+	numWorkers := viper.GetInt("parallel")
+	if numWorkers < 1 {
+		return 1
+	}
+	if numWorkers > 100 {
+		return 100
+	}
+	return numWorkers
 }

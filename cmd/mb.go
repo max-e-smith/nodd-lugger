@@ -1,44 +1,65 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/max-e-smith/cruise-lug/internal/common"
+	"github.com/max-e-smith/cruise-lug/internal/nodd"
 	"github.com/max-e-smith/cruise-lug/internal/nodd/mb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
 )
 
+var survey bool
+var path bool
+var sourceNodd bool
+var sourceNccf bool
 var s3client s3.Client
 
 var mbCmd = &cobra.Command{
 	Use:   "mb",
 	Short: "Handles multibeam bathymetry data requests",
 	Long: `A cruise-lug command for downloading multibeam bathymetry
-		   data. By default takes one or more survey names and a target
-		   download directory as its arguments. By default will pulls
-		   from the NODD (Noaa Open Data Dissemination) source. Usage:
+		   data.
 
-			clug mb <options> <survey name> <survey name> <target directory>
+			Usage:
+				clug mb <source> <access> <options> <arguments> <target directory>
 
-			Options:
+			Source Options (one is required):
+				--sourceNodd: download multibeam bathymetry data from NODD using survey or path criteria.
+				--sourceNccf: download multibeam bathymetry data from NOAA cloud archive (future) using survey or path criteria.
+
+			Access Options (one is required):
+				--survey <survey name(s); space separated>. 
+					Specify a valid survey name or list of survey names to download from NODD.
+				--path <path(s); space separated>.
+					Specify a valid path or list of path prefixes to download from NODD.
+
+			Global options:
+				-b --background (default: false)
+					runs the download process in the background.
+				-c --space-check (default: false)
+					will attempting checking target's disk space before downloading.
 				-v --verbose (default: false)
 					includes additional output in the console.
-				-c --check (default: false)
-					will check local disk space before downloading.
+				-d --dry-run (default: false)
+					will perform a dry run of command, skipping file download.	
 				-p --parallel <number> (default: 3)
 					determines the number of parallel downloads for a request.
-				-s --source <nodd | nccf> (default: nodd)
-					determines the source of the multibeam data. Currently 
-					only NODD is supported.
 			`,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if sourceNodd && !sourceNccf {
+			s3client = nodd.NewNoddClient()
+		} else if sourceNccf {
+			return fmt.Errorf("sourceNccf not yet implemented")
+		}
+		return nil // continue
+	},
+	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		targetPath, surveys := parseArgs(cmd, args)
+		targetPath, surveys := parseMbArgs(cmd, args)
 		parallelDownloads := getWorkersConfig()
 
 		mb.MultibeamDownload(
@@ -54,37 +75,36 @@ var mbCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(mbCmd)
+	// data source options
+	mbCmd.Flags().BoolVar(&sourceNodd, "sourceNodd", false, "Resolve data from NODD cloud archive.")
+	mbCmd.Flags().BoolVar(&sourceNccf, "sourceNccf", false, "Resolve data from NOAA cloud archive (future).")
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
-		config.WithRegion("us-east-1"),
-	)
+	// data access options
+	mbCmd.Flags().BoolVar(&survey, "survey", false,
+		"Resolve and download files based on survey name(s).")
+	mbCmd.Flags().BoolVar(&path, "path", false,
+		"Resolve and download files based on valid cloud path(s).")
 
-	if err != nil {
-		fmt.Printf("Error loading AWS config: %s\n", err)
-		fmt.Println("Failed to download multibeam surveys.")
-		return
+	mbCmd.MarkFlagsOneRequired("survey", "path")
+	mbCmd.MarkFlagsMutuallyExclusive("manifest", "survey", "path")
+	mbCmd.MarkFlagsMutuallyExclusive("sourceNodd", "sourceNccf")
+
+	// bind config
+	sErr := viper.BindPFlag("survey", RootCmd.PersistentFlags().Lookup("survey"))
+	if sErr != nil {
+		log.Fatal(sErr)
 	}
 
-	s3client = *s3.NewFromConfig(cfg)
+	pErr := viper.BindPFlag("path", RootCmd.PersistentFlags().Lookup("path"))
+	if pErr != nil {
+		log.Fatal(pErr)
+	}
 }
 
-func getWorkersConfig() int {
-	numWorkers := viper.GetInt("parallel")
-	if numWorkers < 1 {
-		return 1
-	}
-	if numWorkers > 100 {
-		return 100
-	}
-	return numWorkers
-}
-
-func parseArgs(cmd *cobra.Command, args []string) (string, []string) {
+func parseMbArgs(cmd *cobra.Command, args []string) (string, []string) {
 	var length = len(args)
-	if length <= 1 {
-		usageError(cmd, errors.New("please specify survey name(s) and a target file path"))
+	if length != 2 {
+		mbUsageError(cmd, errors.New("please specify download manifest file path and a target directory path"))
 	}
 
 	var targetPath = args[length-1]
@@ -92,13 +112,13 @@ func parseArgs(cmd *cobra.Command, args []string) (string, []string) {
 
 	targetError := common.VerifyTargetPermissions(targetPath)
 	if targetError != nil {
-		usageError(cmd, targetError)
+		mbUsageError(cmd, targetError)
 	}
 
 	return targetPath, surveys
 }
 
-func usageError(cmd *cobra.Command, err error) {
+func mbUsageError(cmd *cobra.Command, err error) {
 	fmt.Println(cmd.UsageString())
 	log.Fatal(err)
 }
