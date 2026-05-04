@@ -16,22 +16,31 @@ TODO
 FUTURE
 
 ## usage
-lug [command] [subcommand] [options] [parameters] [target]
+clug [command] [options] [arguments] [target]
 
-Commands
+### Commands
+- order
 - mb
 - csb
 - wcd
 - help
 
-Subcommands
-- nodd: retrieve 
-- nccf
+### Options
 
-Options
-`-b | --bathy`: downloads bathymetry data from specified survey
-`-s | --summary`: provides a summary of the survey request instead of download
+-b --background (default: false)
+runs the download process in the background.
 
+-c --space-check (default: false)
+will attempting checking target's disk space before downloading.
+
+-v --verbose (default: false)
+includes additional output in the console.
+
+-d --dry-run (default: false)
+will perform a dry run of command, skipping file download.
+
+-p --parallel <number> (default: 3)
+determines the number of parallel downloads for a request.
 
 # Examples
 
@@ -50,7 +59,7 @@ Download multibeam data from the noaa open dissemnation bucket that has been res
 using the survey name while also increasing the default number of parallel workers 
 to 5 to the target local disk location specified:
 ~~~
-```clug mb --nodd --survey --parallel=5 -bv nf2307 fk2114 /target/download/directory```
+```clug mb --nodd --survey -p=5 -bv nf2307 fk2114 /target/download/directory```
 
 ---
 

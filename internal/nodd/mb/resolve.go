@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (request *MultibeamRequest) resolveSurveys() {
+func (request *MultibeamNoddRequest) resolveSurveys() {
 	fmt.Println("Resolving bathymetry data for specified surveys: ", request.Surveys)
 	var surveyPaths []string
 	wantedSurveys := len(request.Surveys)

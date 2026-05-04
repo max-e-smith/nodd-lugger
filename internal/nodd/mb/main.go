@@ -11,7 +11,7 @@ import (
 
 var multibeamNODDBucket = "noaa-dcdb-bathymetry-pds" // https://noaa-dcdb-bathymetry-pds.s3.amazonaws.com/index.html
 
-func MultibeamDownload(request MultibeamRequest) {
+func MultibeamDownload(request MultibeamNoddRequest) {
 	request.resolveSurveys()
 	request.checkDiskAvailability()
 	request.downloadSurveys()
@@ -21,7 +21,7 @@ func MultibeamDownload(request MultibeamRequest) {
 	}
 }
 
-func (request *MultibeamRequest) checkDiskAvailability() {
+func (request *MultibeamNoddRequest) checkDiskAvailability() {
 	if request.Error != nil || len(request.Prefixes) == 0 {
 		return
 	}
@@ -46,7 +46,7 @@ func (request *MultibeamRequest) checkDiskAvailability() {
 	return
 }
 
-func (request *MultibeamRequest) downloadSurveys() {
+func (request *MultibeamNoddRequest) downloadSurveys() {
 	if request.Error != nil || len(request.Prefixes) == 0 {
 		return
 	}

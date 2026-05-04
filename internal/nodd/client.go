@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func NewNoddClient() s3.Client {
+func NewNoddClient() (s3.Client, error) {
 	// init aws client for nodd access
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
@@ -18,8 +18,8 @@ func NewNoddClient() s3.Client {
 	if err != nil {
 		fmt.Printf("Error loading AWS config: %s\n", err)
 		fmt.Println("Failed to download multibeam surveys.")
-		return
+		return s3.Client{}, err
 	}
 
-	return *s3.NewFromConfig(cfg)
+	return *s3.NewFromConfig(cfg), nil
 }

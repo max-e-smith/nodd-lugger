@@ -49,7 +49,13 @@ Options:
 		determines the number of parallel downloads for a request.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if sourceNodd && !sourceNccf {
-			s3client = nodd.NewNoddClient()
+			client, err := nodd.NewNoddClient()
+			if err != nil {
+				return err
+			}
+
+			s3client = client
+
 		} else if sourceNccf {
 			return fmt.Errorf("nccf as a data source has not yet been implemented")
 		}
@@ -60,15 +66,21 @@ Options:
 		targetPath, surveys := parseMbArgs(cmd, args)
 		parallelDownloads := getWorkersConfig()
 
-		mb.MultibeamDownload(
-			mb.MultibeamRequest{
-				Surveys:     surveys,
-				S3Client:    s3client,
-				TargetDir:   targetPath,
-				WorkerCount: parallelDownloads,
-			},
-		)
+		if sourceNodd {
+			mb.MultibeamDownload(
+				mb.MultibeamNoddRequest{
+					Surveys:     surveys,
+					S3Client:    s3client,
+					TargetDir:   targetPath,
+					WorkerCount: parallelDownloads,
+				},
+			)
+			return
 
+		} else if sourceNccf {
+			fmt.Println("nccf as a data source has not yet been implemented")
+			return
+		}
 	},
 }
 

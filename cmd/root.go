@@ -17,29 +17,28 @@ var RootCmd = &cobra.Command{
 	Use:   "clug",
 	Short: "A client side retrieval tool for accessible cruise-based datasets",
 	Long: `A CLI library for downloading ocean data using a noaa provided manifest or domain driven criteria sourced
-	directly from openly accessible options such as the NOAA Open Data Dissemination (NODD) cloud.
+directly from openly accessible options such as the NOAA Open Data Dissemination (NODD) cloud.
 
-	Subcommands:
-	mb: will resolve and download multibeam bathymetry data files based on survey name, cloud path, or file manifest.
+Subcommands:
+mb: will resolve and download multibeam bathymetry data files based on survey name, cloud path, or file manifest.
 
-	csb: will resolve and download crowdsourced bathymetry data files based on survey name, cloud path, or file manifest.
+csb: will resolve and download crowdsourced bathymetry data files based on survey name, cloud path, or file manifest.
 
-	wcd: will resolve and download water column data data files based on survey name, cloud path, or file manifest.
+wcd: will resolve and download water column data data files based on survey name, cloud path, or file manifest.
 
-	help: provides usage information for each subcommand.
+help: provides usage information for each subcommand.
 
-	Global options:
-		-b --background (default: false)
-			runs the download process in the background.
-		-c --space-check (default: false)
-			will attempting checking target's disk space before downloading.
-		-v --verbose (default: false)
-			includes additional output in the console.
-		-d --dry-run (default: false)
-			will perform a dry run of command, skipping file download.	
-		-p --parallel <number> (default: 3)
-			determines the number of parallel downloads for a request.
-	`,
+Global options:
+	-b --background (default: false)
+		runs the download process in the background.
+	-c --space-check (default: false)
+		will attempting checking target's disk space before downloading.
+	-v --verbose (default: false)
+		includes additional output in the console.
+	-d --dry-run (default: false)
+		will perform a dry run of command, skipping file download.	
+	-p --parallel <number> (default: 3)
+		determines the number of parallel downloads for a request.`,
 }
 
 func Execute() {
