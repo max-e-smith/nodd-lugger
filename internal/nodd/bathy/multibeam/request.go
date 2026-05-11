@@ -2,7 +2,7 @@ package multibeam
 
 import "github.com/aws/aws-sdk-go-v2/service/s3"
 
-type MultibeamNoddRequest struct {
+type MultibeamRequest struct {
 	Surveys     []string
 	Prefixes    []string
 	S3Client    s3.Client

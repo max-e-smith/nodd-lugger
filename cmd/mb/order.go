@@ -39,7 +39,7 @@ Global Options:
 		targetPath, surveys := parseMbSurveyArgs(cmd, args)
 		parallelDownloads := common.GetWorkersConfig()
 		multibeam.MultibeamDownload(
-			multibeam.MultibeamNoddRequest{
+			multibeam.MultibeamRequest{
 				Surveys:     surveys,
 				S3Client:    s3client,
 				TargetDir:   targetPath,

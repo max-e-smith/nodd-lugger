@@ -70,7 +70,7 @@ Global Options:
 
 		if normalizedSource == "NODD" {
 			multibeam.MultibeamDownload(
-				multibeam.MultibeamNoddRequest{
+				multibeam.MultibeamRequest{
 					Surveys:     surveys,
 					S3Client:    s3client,
 					TargetDir:   targetPath,
