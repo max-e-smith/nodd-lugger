@@ -1,4 +1,4 @@
-package mb
+package multibeam
 
 import (
 	"testing"

@@ -24,7 +24,7 @@ FUTURE
 runs the download process in the background.
 
 -c --space-check (default: false)
-will attempting checking target's disk space before downloading.
+will attempt checking target's disk space before downloading.
 
 -v --verbose (default: false)
 includes additional output in the console.
