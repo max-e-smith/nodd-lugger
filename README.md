@@ -1,6 +1,6 @@
 # cruise-lug
 
-CLI tool for downloading mgg geophysics datasets from the NOAA Open Data Dissemenation (NODD) hosted cloud using domain driven criterion.
+CLI tool for downloading mgg geophysics datasets from the NOAA Open Data Dissemination (NODD) hosted cloud using domain-driven criterion.
 
 ## installation
 
@@ -16,16 +16,9 @@ TODO
 FUTURE
 
 ## usage
-clug [command] [options] [arguments] [target]
+```clug <command> [options] [subcommand] [subcommand options] <arguments> <target>```
 
-### Commands
-- order
-- mb
-- csb
-- wcd
-- help
-
-### Options
+### Global Options
 
 -b --background (default: false)
 runs the download process in the background.
@@ -42,16 +35,33 @@ will perform a dry run of command, skipping file download.
 -p --parallel <number> (default: 3)
 determines the number of parallel downloads for a request.
 
-# Examples
+### Commands
+- mb
+- csb
+- wcd
+- path
+- help
+
+#### MB
+
+##### options
+- help
+
+##### subcommands
+ - survey (PENDING)
+ - order (FUTURE)
+
+##### Examples
 
 ---
 ~~~
-Downloading multibeam data from source and source paths——as specified in
-a file manifest——to a target directory while using the background option to
-run the download in the background and the space-check option to estimate disk
-space usage versus available disk space of target prior to download.
+Downloading multibeam data as specified in a manifest, one useing the url option 
+to specify a manifest served as the provided url and another using the file option 
+to specify a local file-based manifest, to a target directory.
 ~~~
-```clug order -bc /path/to/manifest.json /target/download/directory```
+```clug mb order -u https://manifest/url /target/download/directory```
+
+```clug mb order -f /path/to/file/manifest /target/download/directory```
 
 ---
 ~~~
@@ -59,15 +69,46 @@ Download multibeam data from the noaa open dissemnation bucket that has been res
 using the survey name while also increasing the default number of parallel workers 
 to 5 to the target local disk location specified:
 ~~~
-```clug mb --nodd --survey -p=5 -bv nf2307 fk2114 /target/download/directory```
+```clug mb survey -bv -p 5 --source=nodd nf2307 fk2114 /target/download/directory```
 
 ---
 
+#### WCD
+
+##### options
+- help
+
+##### subcommands
+- survey (PENDING)
+- order (PENDING)
+
+##### Examples
+
+```clug wcd order -u https://manifest/url /target/download/directory```
+
+```clug wcd order -f /path/to/file/manifest /target/download/directory```
+
+#### CSB 
+
+##### options
+- help
+
+##### subcommands
+- survey (PENDING)
+
+#### PATH
+
+##### options
+- help
+- 
+
+##### Examples
+
 ~~~
-Download multibeam data from the noaa open dissemnation bucket resolved recursively 
-starting with the cloud path prefix specified while using the dry-run flag to skip
-file download and the verbose option set in order to increase logging output:
+Download data resolved recursively, starting with the cloud path prefix(es)
+specified, while using the dry-run flag to skip file download and the verbose option 
+set in order to increase logging output:
 ~~~
-```clug mb ---nodd --path -dv mb/ships/falkor/fk200429 /target/download/directory```
+```clug path -dv s3://bucketname:prefix1 ... /target/download/directory```
 
 ---

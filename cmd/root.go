@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"github.com/max-e-smith/cruise-lug/cmd/csb"
+	"github.com/max-e-smith/cruise-lug/cmd/mb"
+	"github.com/max-e-smith/cruise-lug/cmd/wcd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -50,10 +53,10 @@ func Execute() {
 
 func init() {
 	// add subcommands
-	RootCmd.AddCommand(orderCmd)
-	RootCmd.AddCommand(mbCmd)
-	RootCmd.AddCommand(csbCmd)
-	RootCmd.AddCommand(wcdCmd)
+	RootCmd.AddCommand(wcd.orderCmd)
+	RootCmd.AddCommand(mb.mbCmd)
+	RootCmd.AddCommand(csb.csbCmd)
+	RootCmd.AddCommand(wcd.wcdCmd)
 
 	// behavioral switches
 	RootCmd.PersistentFlags().BoolVarP(&background, "background", "b", false,
