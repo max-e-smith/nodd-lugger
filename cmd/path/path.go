@@ -7,24 +7,16 @@ import (
 )
 
 var pathCmd = &cobra.Command{
-	Use:   "mb",
-	Short: "Handles multibeam bathymetry data requests",
-	Long: `A cruise-lug command for downloading multibeam bathymetry data.
+	Use:   "path",
+	Short: "Handles data requests for a given cloud prefix or set of prefixes",
+	Long: `
+A cruise-lug command for downloading NCEI data using cloud path prefixes.
 
-Usage:
-	clug [global options] path <prefix arguments> <target_dir>
+Providing an aws cloud path prefix will recursively download all files in that path. Providing a
+space-separated list of cloud path prefixes will do the same for each prefix.
 
-Global Options:
-	-b --background (default: false)
-		runs the download process in the background.
-	-c --space-check (default: false)
-		will attempting checking target's disk space before downloading.
-	-v --verbose (default: false)
-		includes additional output in the console.
-	-d --dry-run (default: false)
-		will perform a dry run of command, skipping file download.	
-	-p --parallel <number> (default: 3)
-		determines the number of parallel downloads for a request.`,
+Future work will include support for non-aws cloud providers.
+	`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print("path called")

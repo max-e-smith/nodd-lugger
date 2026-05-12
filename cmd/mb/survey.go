@@ -8,38 +8,25 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/text/unicode/norm"
-	"log"
 	"strings"
 )
 
 var source string
-var normalizedSource string
 
 var surveyCmd = &cobra.Command{
-	Use:   "mb",
+	Use:   "survey",
 	Short: "Handles multibeam bathymetry data requests",
-	Long: `A cruise-lug command for downloading multibeam bathymetry data on a survey name basis.
-
-Usage:
-	clug [options] mb survey [source_option ( -s NODD | NCCF )] <arguments> <target_dir>
-
-Options
-	-s --source <source>. 
-		Specify a valid source: NODD | NCCF (Currently only NODD is supported, NCCF is a future feature).
-
-Global Options:
-	-b --background (default: false)
-		runs the download process in the background.
-	-c --space-check (default: false)
-		will attempting checking target's disk space before downloading.
-	-v --verbose (default: false)
-		includes additional output in the console.
-	-d --dry-run (default: false)
-		will perform a dry run of command, skipping file download.	
-	-p --parallel <number> (default: 3)
-		determines the number of parallel downloads for a request.`,
+	Long: `
+A cruise-lug command for downloading multibeam bathymetry data on a survey name basis.
+	
+when providing a valid survey name or list of space-separated survey names, clug will attempt to 
+resolve those survey names in the configured source location (the default is NODD, NOAA's Open
+Data Dissemination initiation, and then download all data files and related files for that survey.
+	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		normalizedSource = strings.ToUpper(norm.NFC.String(source))
+		normalizedSource := strings.ToUpper(norm.NFC.String(source))
+
+		viper.Set("source", normalizedSource)
 
 		if normalizedSource != "NODD" && normalizedSource != "NCCF" {
 			common.UsageError(cmd, errors.New("please specify a valid source: NODD | NCCF"))
@@ -56,7 +43,7 @@ Global Options:
 		targetPath, surveys := parseMbSurveyArgs(cmd, args)
 		parallelDownloads := common.GetWorkersConfig()
 
-		if normalizedSource == "NODD" {
+		if (viper.GetString("source")) == "NODD" {
 
 			multibeam.MultibeamDownload(
 				multibeam.MultibeamRequest{
@@ -76,12 +63,6 @@ func init() {
 
 	// data source options
 	surveyCmd.Flags().StringVarP(&source, "source", "s", "NODD", "Define source data repository.")
-
-	// bind config
-	sErr := viper.BindPFlag("survey", surveyCmd.PersistentFlags().Lookup("source"))
-	if sErr != nil {
-		log.Fatal(sErr)
-	}
 
 }
 
