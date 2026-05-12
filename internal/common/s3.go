@@ -18,11 +18,10 @@ import (
 var spin *spinner.Spinner
 
 type Order struct {
-	Bucket      string
-	Prefixes    []string
-	Client      s3.Client
-	TargetDir   string
-	WorkerCount int
+	Bucket    string
+	Prefixes  []string
+	Client    s3.Client
+	TargetDir string
 }
 
 type Download struct {
@@ -51,11 +50,12 @@ func (order Order) DownloadFiles() error {
 	fmt.Printf("Downloading files to: %s\n", order.TargetDir)
 	spin = spinner.New(spinner.CharSets[24], 100*time.Millisecond)
 	spin.Start()
+	workerCount := GetWorkersConfig()
 
 	var wg sync.WaitGroup
-	downloads := make(chan Download, order.WorkerCount*2)
+	downloads := make(chan Download, workerCount*2)
 
-	for i := 1; i <= order.WorkerCount; i++ {
+	for i := 1; i <= workerCount; i++ {
 		wg.Add(1)
 		go downloadWorker(downloads, &wg)
 	}

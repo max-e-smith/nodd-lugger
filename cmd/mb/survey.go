@@ -46,14 +46,12 @@ Data Dissemination initiation, and then download all data files and related file
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		targetPath, surveys := parseMbSurveyArgs(cmd, args)
-		parallelDownloads := common.GetWorkersConfig()
 
 		request := multibeam.SurveyRequest{
-			Arguments:   surveys,
-			S3Client:    S3client,
-			S3Bucket:    bucket,
-			TargetDir:   targetPath,
-			WorkerCount: parallelDownloads,
+			Arguments: surveys,
+			S3Client:  S3client,
+			S3Bucket:  bucket,
+			TargetDir: targetPath,
 		}
 
 		download.Submit(&request)

@@ -7,8 +7,8 @@ func GetWorkersConfig() int {
 	if numWorkers < 1 {
 		return 1
 	}
-	if numWorkers > 100 {
-		return 100
+	if numWorkers > 1024 {
+		return 1024
 	}
 	return numWorkers
 }

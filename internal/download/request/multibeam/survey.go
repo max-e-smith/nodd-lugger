@@ -14,13 +14,12 @@ import (
 )
 
 type SurveyRequest struct {
-	Arguments   []string
-	Resolved    []string
-	S3Bucket    string
-	S3Client    s3.Client
-	TargetDir   string
-	WorkerCount int
-	Error       error
+	Arguments []string
+	Resolved  []string
+	S3Bucket  string
+	S3Client  s3.Client
+	TargetDir string
+	Error     error
 }
 
 func (request *SurveyRequest) Resolve() {
@@ -155,11 +154,10 @@ func (request *SurveyRequest) Download() {
 	defer common.LogDownloadTime(start)
 
 	order := common.Order{
-		Bucket:      request.S3Bucket,
-		Prefixes:    request.Resolved,
-		Client:      request.S3Client,
-		TargetDir:   request.TargetDir,
-		WorkerCount: request.WorkerCount,
+		Bucket:    request.S3Bucket,
+		Prefixes:  request.Resolved,
+		Client:    request.S3Client,
+		TargetDir: request.TargetDir,
 	}
 
 	if err := order.DownloadFiles(); err != nil {
