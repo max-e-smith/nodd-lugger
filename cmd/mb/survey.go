@@ -8,7 +8,6 @@ import (
 	"github.com/max-e-smith/cruise-lug/internal/download/request/multibeam"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/unicode/norm"
-	"log"
 	"strings"
 )
 
@@ -47,7 +46,7 @@ Data Dissemination initiation, and then download all data files and related file
 		return nil // continue
 	},
 	Args: cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		request := multibeam.SurveyRequest{
 			Arguments: surveys,
 			S3Client:  S3client,
@@ -58,8 +57,10 @@ Data Dissemination initiation, and then download all data files and related file
 		download.Submit(&request)
 
 		if request.Error != nil {
-			log.Fatal(request.Error)
+			return request.Error
 		}
+
+		return nil
 	},
 }
 
