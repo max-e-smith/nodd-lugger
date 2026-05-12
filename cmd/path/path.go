@@ -1,25 +1,18 @@
-package cmd
+package path
 
 import (
+	"fmt"
+	"github.com/max-e-smith/cruise-lug/cmd"
 	"github.com/spf13/cobra"
 )
 
-var survey bool
-var path bool
-
-var MbCmd = &cobra.Command{
+var pathCmd = &cobra.Command{
 	Use:   "mb",
 	Short: "Handles multibeam bathymetry data requests",
 	Long: `A cruise-lug command for downloading multibeam bathymetry data.
 
 Usage:
-	clug [global options] mb <subcommand> [subcommand options] <arguments> <target_dir>
-
-Subcommands:
-	survey <survey name(s)>. 
-		Specify a valid survey name or list of space-separated survey names to download.
-	order <manifest>.
-		Specify a valid download manifest json.
+	clug [global options] path <prefix arguments> <target_dir>
 
 Global Options:
 	-b --background (default: false)
@@ -32,9 +25,12 @@ Global Options:
 		will perform a dry run of command, skipping file download.	
 	-p --parallel <number> (default: 3)
 		determines the number of parallel downloads for a request.`,
+	Args: cobra.MinimumNArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("path called")
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(MbCmd)
-
+	cmd.RootCmd.AddCommand(pathCmd)
 }

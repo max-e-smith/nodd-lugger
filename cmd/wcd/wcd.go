@@ -1,10 +1,11 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package wcd
 
 import (
 	"fmt"
+	"github.com/max-e-smith/cruise-lug/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
+	cmd.RootCmd.AddCommand(wcdCmd)
 
 	// Here you will define your flags and configuration settings.
 

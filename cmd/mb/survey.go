@@ -3,10 +3,7 @@ package mb
 import (
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/max-e-smith/cruise-lug/cmd"
 	"github.com/max-e-smith/cruise-lug/internal/common"
-	"github.com/max-e-smith/cruise-lug/internal/nodd"
 	"github.com/max-e-smith/cruise-lug/internal/nodd/bathy/multibeam"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,8 +14,6 @@ import (
 
 var source string
 var normalizedSource string
-
-var s3client s3.Client
 
 var surveyCmd = &cobra.Command{
 	Use:   "mb",
@@ -54,13 +49,6 @@ Global Options:
 			return fmt.Errorf("nccf as a data source has not yet been implemented")
 		}
 
-		client, err := nodd.NewNoddClient()
-		if err != nil {
-			return err
-		}
-
-		s3client = client
-
 		return nil // continue
 	},
 	Args: cobra.MinimumNArgs(2),
@@ -69,10 +57,11 @@ Global Options:
 		parallelDownloads := common.GetWorkersConfig()
 
 		if normalizedSource == "NODD" {
+
 			multibeam.MultibeamDownload(
 				multibeam.MultibeamRequest{
 					Surveys:     surveys,
-					S3Client:    s3client,
+					S3Client:    S3client,
 					TargetDir:   targetPath,
 					WorkerCount: parallelDownloads,
 				},
@@ -83,7 +72,7 @@ Global Options:
 }
 
 func init() {
-	cmd.MbCmd.AddCommand(surveyCmd)
+	MbCmd.AddCommand(surveyCmd)
 
 	// data source options
 	surveyCmd.Flags().StringVarP(&source, "source", "s", "NODD", "Define source data repository.")

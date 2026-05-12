@@ -1,9 +1,10 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package csb
 
 import (
+	"github.com/max-e-smith/cruise-lug/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -19,5 +20,5 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	rootCmd.AddCommand(CsbCmd)
+	cmd.RootCmd.AddCommand(CsbCmd)
 }

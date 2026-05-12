@@ -1,7 +1,6 @@
 package mb
 
 import (
-	"github.com/max-e-smith/cruise-lug/cmd"
 	"github.com/max-e-smith/cruise-lug/internal/common"
 	"github.com/max-e-smith/cruise-lug/internal/nodd/bathy/multibeam"
 	"github.com/spf13/cobra"
@@ -41,7 +40,7 @@ Global Options:
 		multibeam.MultibeamDownload(
 			multibeam.MultibeamRequest{
 				Surveys:     surveys,
-				S3Client:    s3client,
+				S3Client:    S3client,
 				TargetDir:   targetPath,
 				WorkerCount: parallelDownloads,
 			},
@@ -51,7 +50,7 @@ Global Options:
 }
 
 func init() {
-	cmd.MbCmd.AddCommand(orderCmd)
+	MbCmd.AddCommand(orderCmd)
 
 	// manifest source options
 	surveyCmd.Flags().StringVarP(&source, "file", "f", "", "Provide file manifest.")

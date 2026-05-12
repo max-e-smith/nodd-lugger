@@ -1,4 +1,4 @@
-package nodd
+package common
 
 import (
 	"context"
@@ -8,16 +8,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func NewNoddClient() (s3.Client, error) {
-	// init aws client for nodd access
+func NewS3Client(region string) (s3.Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
-		config.WithRegion("us-east-1"),
+		config.WithRegion(region),
 	)
 
 	if err != nil {
 		fmt.Printf("Error loading AWS config: %s\n", err)
-		fmt.Println("Failed to download multibeam surveys.")
 		return s3.Client{}, err
 	}
 
