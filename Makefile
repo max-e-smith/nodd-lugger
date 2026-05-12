@@ -52,7 +52,7 @@ it:
 
 .PHONY: smoke
 smoke:
-	go run main.go get cruise AT43-02 .test/smoke/testd -mv -p=8
+	go run main.go -kv -p=8 mb survey AT43-02 ./test/smoke/testd
 
 # ====
 # DIST

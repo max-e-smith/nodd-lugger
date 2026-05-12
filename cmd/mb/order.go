@@ -1,8 +1,6 @@
 package mb
 
 import (
-	"github.com/max-e-smith/cruise-lug/internal/common"
-	"github.com/max-e-smith/cruise-lug/internal/nodd/bathy/multibeam"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -39,16 +37,23 @@ Manifest format:
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		targetPath, surveys := parseMbSurveyArgs(cmd, args)
-		parallelDownloads := common.GetWorkersConfig()
-		multibeam.MultibeamDownload(
-			multibeam.MultibeamRequest{
-				Surveys:     surveys,
-				S3Client:    S3client,
-				TargetDir:   targetPath,
-				WorkerCount: parallelDownloads,
-			},
-		)
+		//targetPath, surveys := parseMbSurveyArgs(cmd, args)
+		//parallelDownloads := common.GetWorkersConfig()
+
+		// THIS IS WRONG, EACH ENTRY IN THE MANIFEST WILL NEED TO BE PARSED FOR CLOUD SOURCE / BUCKET AND A NEW
+		// S3 REQUEST (OR OTHER) GENERATED FOR EACH ENTRY
+		//multibeam.Download(
+		//	multibeam.SurveyRequest{
+		//		Request: common.S3Request{
+		//			Arguments:   surveys,
+		//			S3Client:    S3client,
+		//			TargetDir:   targetPath,
+		//			WorkerCount: parallelDownloads,
+		//		},
+		//	},
+		//)
+
+		println("order called")
 		return
 	},
 }

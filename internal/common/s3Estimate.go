@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GetDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string) (int64, error) {
+func GetCloudContentsDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string) (int64, error) {
 	var totalSurveysSize int64 = 0
 	verbose := viper.GetBool("verbose")
 

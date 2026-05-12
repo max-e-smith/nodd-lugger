@@ -19,7 +19,7 @@ A cruise-lug command for downloading multibeam bathymetry data.
 	`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 
-		client, err := common.NewS3Client(viper.GetString("s3.region")) // default NODD region
+		client, err := common.NewS3Client(viper.GetString("s3.region"))
 		if err != nil {
 			return err
 		}

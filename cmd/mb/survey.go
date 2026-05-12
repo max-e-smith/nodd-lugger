@@ -3,15 +3,16 @@ package mb
 import (
 	"errors"
 	"fmt"
+	"github.com/max-e-smith/cruise-lug/internal/bathy/multibeam"
 	"github.com/max-e-smith/cruise-lug/internal/common"
-	"github.com/max-e-smith/cruise-lug/internal/nodd/bathy/multibeam"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"golang.org/x/text/unicode/norm"
+	"log"
 	"strings"
 )
 
 var source string
+var bucket string
 
 var surveyCmd = &cobra.Command{
 	Use:   "survey",
@@ -26,14 +27,17 @@ Data Dissemination initiation, and then download all data files and related file
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		normalizedSource := strings.ToUpper(norm.NFC.String(source))
 
-		viper.Set("source", normalizedSource)
-
 		if normalizedSource != "NODD" && normalizedSource != "NCCF" {
 			common.UsageError(cmd, errors.New("please specify a valid source: NODD | NCCF"))
 		}
 
 		if normalizedSource == "NCCF" {
+			bucket = multibeam.NCCFBucket
 			return fmt.Errorf("nccf as a data source has not yet been implemented")
+		}
+
+		if normalizedSource == "NODD" {
+			bucket = multibeam.NODDBucket
 		}
 
 		return nil // continue
@@ -43,16 +47,22 @@ Data Dissemination initiation, and then download all data files and related file
 		targetPath, surveys := parseMbSurveyArgs(cmd, args)
 		parallelDownloads := common.GetWorkersConfig()
 
-		if (viper.GetString("source")) == "NODD" {
+		request := multibeam.SurveyRequest{
+			Request: common.S3Request{
+				Arguments:   surveys,
+				S3Client:    S3client,
+				S3Bucket:    bucket,
+				TargetDir:   targetPath,
+				WorkerCount: parallelDownloads,
+			},
+		}
 
-			multibeam.MultibeamDownload(
-				multibeam.MultibeamRequest{
-					Surveys:     surveys,
-					S3Client:    S3client,
-					TargetDir:   targetPath,
-					WorkerCount: parallelDownloads,
-				},
-			)
+		request.Resolve()
+		request.CheckDiskAvailability()
+		request.DownloadSurveys()
+
+		if request.Request.Error != nil {
+			log.Fatal(request.Request.Error)
 		}
 
 	},
