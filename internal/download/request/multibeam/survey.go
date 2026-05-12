@@ -14,42 +14,47 @@ import (
 )
 
 type SurveyRequest struct {
-	Request common.S3Request
+	Arguments   []string
+	Resolved    []string
+	S3Bucket    string
+	S3Client    s3.Client
+	TargetDir   string
+	WorkerCount int
+	Error       error
 }
 
 func (request *SurveyRequest) Resolve() {
-	s3Request := request.Request
-	fmt.Println("Resolving bathymetry data for specified surveys: ", s3Request.Arguments)
+	fmt.Println("Resolving bathymetry data for specified surveys: ", request.Arguments)
 	var surveyPaths []string
-	wantedSurveys := len(s3Request.Arguments)
+	wantedSurveys := len(request.Arguments)
 	foundSurveys := 0
 
-	pt, ptErr := s3Request.S3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket:    aws.String(s3Request.S3Bucket),
+	pt, ptErr := request.S3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+		Bucket:    aws.String(request.S3Bucket),
 		Prefix:    aws.String("mb/"),
 		Delimiter: aws.String("/"),
 	})
 
 	if ptErr != nil {
-		s3Request.Error = ptErr
+		request.Error = ptErr
 		return
 	}
 
 	for _, platformType := range pt.CommonPrefixes {
 
 		platformParams := &s3.ListObjectsV2Input{
-			Bucket:    aws.String(s3Request.S3Bucket),
+			Bucket:    aws.String(request.S3Bucket),
 			Prefix:    aws.String(*platformType.Prefix),
 			Delimiter: aws.String("/"),
 		}
 
-		allPlatforms := s3.NewListObjectsV2Paginator(&s3Request.S3Client, platformParams)
+		allPlatforms := s3.NewListObjectsV2Paginator(&request.S3Client, platformParams)
 
 		for allPlatforms.HasMorePages() {
 			platsPage, platsErr := allPlatforms.NextPage(context.TODO())
 
 			if platsErr != nil {
-				s3Request.Error = platsErr
+				request.Error = platsErr
 				return
 			}
 
@@ -57,24 +62,24 @@ func (request *SurveyRequest) Resolve() {
 				fmt.Printf("  searching %s\n", *platform.Prefix)
 
 				platformParams := &s3.ListObjectsV2Input{
-					Bucket:    aws.String(s3Request.S3Bucket),
+					Bucket:    aws.String(request.S3Bucket),
 					Prefix:    aws.String(*platform.Prefix),
 					Delimiter: aws.String("/"),
 				}
 
-				platformPaginator := s3.NewListObjectsV2Paginator(&s3Request.S3Client, platformParams)
+				platformPaginator := s3.NewListObjectsV2Paginator(&request.S3Client, platformParams)
 
 				for platformPaginator.HasMorePages() {
 					surveysPage, err := platformPaginator.NextPage(context.TODO())
 					if err != nil {
-						s3Request.Error = err
+						request.Error = err
 						return
 					}
 
 					for _, survey := range surveysPage.CommonPrefixes {
 						surveyPrefix := *survey.Prefix
 						survey := path.Base(strings.TrimRight(surveyPrefix, "/"))
-						if isSurveyMatch(s3Request.Arguments, survey) {
+						if isSurveyMatch(request.Arguments, survey) {
 							surveyPaths = append(surveyPaths, surveyPrefix)
 							foundSurveys++
 						}
@@ -84,7 +89,7 @@ func (request *SurveyRequest) Resolve() {
 
 				if wantedSurveys == foundSurveys {
 					// all surveys are found
-					s3Request.Resolved = surveyPaths
+					request.Resolved = surveyPaths
 					return
 				}
 			}
@@ -92,10 +97,10 @@ func (request *SurveyRequest) Resolve() {
 	}
 
 	if len(surveyPaths) == 0 {
-		fmt.Printf("No matching surveys found for %s\n", s3Request.Arguments)
+		fmt.Printf("No matching surveys found for %s\n", request.Arguments)
 	} else {
-		fmt.Printf("Found %d of %d wanted surveys at: %s\n", len(surveyPaths), len(s3Request.Arguments), surveyPaths)
-		s3Request.Resolved = surveyPaths
+		fmt.Printf("Found %d of %d wanted surveys at: %s\n", len(surveyPaths), len(request.Arguments), surveyPaths)
+		request.Resolved = surveyPaths
 
 	}
 	return
@@ -111,9 +116,8 @@ func isSurveyMatch(surveys []string, resolvedSurvey string) bool {
 	return false
 }
 
-func (request *SurveyRequest) CheckDiskAvailability() {
-	s3Request := request.Request
-	if s3Request.Error != nil || len(s3Request.Resolved) == 0 {
+func (request *SurveyRequest) VerifyTarget() {
+	if request.Error != nil || len(request.Resolved) == 0 {
 		return
 	}
 
@@ -123,23 +127,22 @@ func (request *SurveyRequest) CheckDiskAvailability() {
 		return
 	}
 
-	bytes, estimateErr := common.GetCloudContentsDiskUsageEstimate(s3Request.S3Bucket, s3Request.S3Client, s3Request.Resolved)
+	bytes, estimateErr := common.GetCloudContentsDiskUsageEstimate(request.S3Bucket, request.S3Client, request.Resolved)
 	if estimateErr != nil {
-		s3Request.Error = errors.Join(errors.New("unable to get disk usage estimate from s3 bucket"), estimateErr)
+		request.Error = errors.Join(errors.New("unable to get disk usage estimate from s3 bucket"), estimateErr)
 		return
 	}
 
-	spaceErr := common.DiskSpaceCheck(bytes, s3Request.TargetDir)
+	spaceErr := common.DiskSpaceCheck(bytes, request.TargetDir)
 	if spaceErr != nil {
-		s3Request.Error = spaceErr
+		request.Error = spaceErr
 	}
 
 	return
 }
 
-func (request *SurveyRequest) DownloadSurveys() {
-	s3Request := request.Request
-	if s3Request.Error != nil || len(s3Request.Resolved) == 0 {
+func (request *SurveyRequest) Download() {
+	if request.Error != nil || len(request.Resolved) == 0 {
 		return
 	}
 	dryRun := viper.GetBool("try")
@@ -152,15 +155,15 @@ func (request *SurveyRequest) DownloadSurveys() {
 	defer common.LogDownloadTime(start)
 
 	order := common.Order{
-		Bucket:      s3Request.S3Bucket,
-		Prefixes:    s3Request.Resolved,
-		Client:      s3Request.S3Client,
-		TargetDir:   s3Request.TargetDir,
-		WorkerCount: s3Request.WorkerCount,
+		Bucket:      request.S3Bucket,
+		Prefixes:    request.Resolved,
+		Client:      request.S3Client,
+		TargetDir:   request.TargetDir,
+		WorkerCount: request.WorkerCount,
 	}
 
 	if err := order.DownloadFiles(); err != nil {
-		s3Request.Error = err
+		request.Error = err
 	}
 
 	return

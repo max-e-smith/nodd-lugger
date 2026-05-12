@@ -3,8 +3,9 @@ package mb
 import (
 	"errors"
 	"fmt"
-	"github.com/max-e-smith/cruise-lug/internal/bathy/multibeam"
 	"github.com/max-e-smith/cruise-lug/internal/common"
+	"github.com/max-e-smith/cruise-lug/internal/download"
+	"github.com/max-e-smith/cruise-lug/internal/download/request/multibeam"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/unicode/norm"
 	"log"
@@ -48,21 +49,17 @@ Data Dissemination initiation, and then download all data files and related file
 		parallelDownloads := common.GetWorkersConfig()
 
 		request := multibeam.SurveyRequest{
-			Request: common.S3Request{
-				Arguments:   surveys,
-				S3Client:    S3client,
-				S3Bucket:    bucket,
-				TargetDir:   targetPath,
-				WorkerCount: parallelDownloads,
-			},
+			Arguments:   surveys,
+			S3Client:    S3client,
+			S3Bucket:    bucket,
+			TargetDir:   targetPath,
+			WorkerCount: parallelDownloads,
 		}
 
-		request.Resolve()
-		request.CheckDiskAvailability()
-		request.DownloadSurveys()
+		download.Submit(&request)
 
-		if request.Request.Error != nil {
-			log.Fatal(request.Request.Error)
+		if request.Error != nil {
+			log.Fatal(request.Error)
 		}
 
 	},

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/briandowns/spinner"
@@ -30,6 +31,20 @@ type Download struct {
 	TargetFile string
 	Client     s3.Client
 	WaitGroup  *sync.WaitGroup
+}
+
+func NewS3Client(region string) (s3.Client, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
+		config.WithRegion(region),
+	)
+
+	if err != nil {
+		fmt.Printf("Error loading AWS config: %s\n", err)
+		return s3.Client{}, err
+	}
+
+	return *s3.NewFromConfig(cfg), nil
 }
 
 func (order Order) DownloadFiles() error {
@@ -119,4 +134,36 @@ func downloadLargeObject(bucket string, objectKey string, client s3.Client, targ
 	}
 
 	return
+}
+
+func GetCloudContentsDiskUsageEstimate(bucket string, s3client s3.Client, rootPaths []string) (int64, error) {
+	var totalSurveysSize int64 = 0
+	verbose := viper.GetBool("verbose")
+
+	for _, surveyRootPath := range rootPaths {
+		fmt.Printf("Getting disk usage estimate for s3 files on %s at %s\n", bucket, surveyRootPath)
+
+		params := &s3.ListObjectsV2Input{
+			Bucket: aws.String(bucket),
+			Prefix: aws.String(surveyRootPath),
+		}
+
+		filePaginator := s3.NewListObjectsV2Paginator(&s3client, params)
+		for filePaginator.HasMorePages() {
+			page, err := filePaginator.NextPage(context.TODO())
+			if err != nil {
+				return totalSurveysSize, err
+			}
+
+			for _, object := range page.Contents {
+				if verbose {
+					fmt.Printf(" key=%s size=%d\n", aws.ToString(object.Key), *object.Size)
+				}
+				totalSurveysSize = totalSurveysSize + *object.Size
+			}
+		}
+
+	}
+
+	return totalSurveysSize, nil
 }
