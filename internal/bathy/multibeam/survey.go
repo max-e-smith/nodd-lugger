@@ -25,7 +25,7 @@ func (request *SurveyRequest) Resolve() {
 	foundSurveys := 0
 
 	pt, ptErr := s3Request.S3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
-		Bucket:    aws.String(NODDBucket),
+		Bucket:    aws.String(s3Request.S3Bucket),
 		Prefix:    aws.String("mb/"),
 		Delimiter: aws.String("/"),
 	})
@@ -38,7 +38,7 @@ func (request *SurveyRequest) Resolve() {
 	for _, platformType := range pt.CommonPrefixes {
 
 		platformParams := &s3.ListObjectsV2Input{
-			Bucket:    aws.String(NODDBucket),
+			Bucket:    aws.String(s3Request.S3Bucket),
 			Prefix:    aws.String(*platformType.Prefix),
 			Delimiter: aws.String("/"),
 		}
@@ -57,7 +57,7 @@ func (request *SurveyRequest) Resolve() {
 				fmt.Printf("  searching %s\n", *platform.Prefix)
 
 				platformParams := &s3.ListObjectsV2Input{
-					Bucket:    aws.String(NODDBucket),
+					Bucket:    aws.String(s3Request.S3Bucket),
 					Prefix:    aws.String(*platform.Prefix),
 					Delimiter: aws.String("/"),
 				}
@@ -123,7 +123,7 @@ func (request *SurveyRequest) CheckDiskAvailability() {
 		return
 	}
 
-	bytes, estimateErr := common.GetCloudContentsDiskUsageEstimate(NODDBucket, s3Request.S3Client, s3Request.Resolved)
+	bytes, estimateErr := common.GetCloudContentsDiskUsageEstimate(s3Request.S3Bucket, s3Request.S3Client, s3Request.Resolved)
 	if estimateErr != nil {
 		s3Request.Error = errors.Join(errors.New("unable to get disk usage estimate from s3 bucket"), estimateErr)
 		return
@@ -152,7 +152,7 @@ func (request *SurveyRequest) DownloadSurveys() {
 	defer common.LogDownloadTime(start)
 
 	order := common.Order{
-		Bucket:      NODDBucket,
+		Bucket:      s3Request.S3Bucket,
 		Prefixes:    s3Request.Resolved,
 		Client:      s3Request.S3Client,
 		TargetDir:   s3Request.TargetDir,
