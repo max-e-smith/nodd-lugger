@@ -14,6 +14,8 @@ import (
 
 var source string
 var bucket string
+var target string
+var surveys []string
 
 var surveyCmd = &cobra.Command{
 	Use:   "survey",
@@ -26,6 +28,7 @@ resolve those survey names in the configured source location (the default is NOD
 Data Dissemination initiation, and then download all data files and related files for that survey.
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		target, surveys = parseMbSurveyArgs(cmd, args)
 		normalizedSource := strings.ToUpper(norm.NFC.String(source))
 
 		if normalizedSource != "NODD" && normalizedSource != "NCCF" {
@@ -45,13 +48,11 @@ Data Dissemination initiation, and then download all data files and related file
 	},
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		targetPath, surveys := parseMbSurveyArgs(cmd, args)
-
 		request := multibeam.SurveyRequest{
 			Arguments: surveys,
 			S3Client:  S3client,
 			S3Bucket:  bucket,
-			TargetDir: targetPath,
+			TargetDir: target,
 		}
 
 		download.Submit(&request)
@@ -59,7 +60,6 @@ Data Dissemination initiation, and then download all data files and related file
 		if request.Error != nil {
 			log.Fatal(request.Error)
 		}
-
 	},
 }
 
