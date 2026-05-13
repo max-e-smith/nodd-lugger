@@ -1,0 +1,404 @@
+{
+  "_comment": "THIS JSON INCLUDES METADATA CLOUD PATHS, WHICH LIKELY WON'T BE RESOLVED BY MAPSERVICES AND SO APPEAR HERE",
+  "displayFieldName": "FILE_NAME",
+  "fieldAliases": {
+    "FILE_NAME": "File Name",
+    "CLOUD_PATH": "Cloud Path",
+    "USE_RECURSIVE": "USE_RECURSIVE"
+  },
+  "fields": [
+    {
+      "name": "FILE_NAME",
+      "type": "esriFieldTypeString",
+      "alias": "File Name",
+      "length": 200
+    },
+    {
+      "name": "CLOUD_PATH",
+      "type": "esriFieldTypeString",
+      "alias": "Cloud Path",
+      "length": 450
+    },
+    {
+      "name": "USE_RECURSIVE",
+      "type": "esriFieldTypeString",
+      "alias": "USE_RECURSIVE",
+      "length": 1
+    }
+  ],
+  "features": [
+      {
+        "attributes": {
+          "FILE_NAME": "AT44-03_Multibeam.xml",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/generated/AT44-03_Multibeam.xml"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "AT44-03.xml",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/AT44-03.xml"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "bag-info.txt",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/bag-info.txt"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "bagit.txt",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/bagit.txt"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "file-info.txt",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/file-info.txt"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "manifest-md5.txt",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/manifest-md5.txt"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "tagmanifest-md5.txt",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/metadata/level_00/tagmanifest-md5.txt"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0000_20211121_134806.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0000_20211121_134806.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0000_20211121_145634.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0000_20211121_145634.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0001_20211121_141806.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0001_20211121_141806.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0001_20211121_152634.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0001_20211121_152634.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0002_20211121_155520.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0002_20211121_155520.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0003_20211121_155527.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0003_20211121_155527.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0004_20211121_162527.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0004_20211121_162527.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0005_20211121_165527.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0005_20211121_165527.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0006_20211121_170544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0006_20211121_170544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0007_20211121_173544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0007_20211121_173544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0008_20211121_180544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0008_20211121_180544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0009_20211121_183544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0009_20211121_183544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0010_20211121_190544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0010_20211121_190544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0011_20211121_193544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0011_20211121_193544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0012_20211121_200544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0012_20211121_200544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0013_20211121_203544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0013_20211121_203544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0014_20211121_210544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0014_20211121_210544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0015_20211121_213544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0015_20211121_213544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0016_20211121_220544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0016_20211121_220544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0017_20211121_223544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0017_20211121_223544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0018_20211121_230544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0018_20211121_230544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0019_20211121_233544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0019_20211121_233544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0020_20211122_000544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0020_20211122_000544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0021_20211122_003544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0021_20211122_003544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0022_20211122_010544.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0022_20211122_010544.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0023_20211122_013543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0023_20211122_013543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0024_20211122_020543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0024_20211122_020543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0025_20211122_023543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0025_20211122_023543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0026_20211122_030543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0026_20211122_030543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0027_20211122_033543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0027_20211122_033543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0028_20211122_040543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0028_20211122_040543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0029_20211122_043543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0029_20211122_043543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0030_20211122_050543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0030_20211122_050543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0031_20211122_053543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0031_20211122_053543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0032_20211122_060543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0032_20211122_060543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0033_20211122_063543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0033_20211122_063543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0034_20211122_070543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0034_20211122_070543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0035_20211122_073543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0035_20211122_073543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0036_20211122_080543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0036_20211122_080543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0037_20211122_083543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0037_20211122_083543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0038_20211122_090543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0038_20211122_090543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0039_20211122_093543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0039_20211122_093543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0040_20211122_100543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0040_20211122_100543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0041_20211122_103543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0041_20211122_103543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0042_20211122_110543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0042_20211122_110543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0043_20211122_113543.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0043_20211122_113543.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0044_20211123_115646.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0044_20211123_115646.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0045_20211123_122646.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0045_20211123_122646.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "0047_20211123_133024.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/0047_20211123_133024.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "9999_211124210427tmp.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/9999_211124210427tmp.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "9999_211124210452tmp.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/9999_211124210452tmp.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "9999_211124210501tmp.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/9999_211124210501tmp.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "9999_211124210601tmp.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/9999_211124210601tmp.kmall"
+        }
+      },
+      {
+        "attributes": {
+          "FILE_NAME": "9999_211124210705tmp.kmall",
+          "CLOUD_PATH": "s3://noaa-dcdb-bathymetry-pds/mb/ships/atlantis/AT44-03/multibeam/level_00/AT44-03_RAW_EM124/9999_211124210705tmp.kmall"
+        }
+      }
+  ]
+}
+
+
+
+
+
+
+
