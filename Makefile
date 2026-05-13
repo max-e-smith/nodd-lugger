@@ -34,6 +34,7 @@ compile:
 .PHONY: clean
 clean:
 	rm -rf ${BIN_PATH}
+	rm -rf ${TST_PATH}/smoke/*
 	go vet
 	go fmt
 	go mod tidy
@@ -52,7 +53,8 @@ it:
 
 .PHONY: smoke
 smoke:
-	go run main.go -kv -p=8 mb survey AT43-02 ./test/smoke/testd
+	$(MAKE) clean
+	go run main.go -kv -p=8 mb survey AT43-02 ./test/smoke
 
 # ====
 # DIST
