@@ -14,7 +14,7 @@ import (
 var source string
 var target string
 var surveys []string
-var request multibeam.SurveyRequest
+var surveyRequest multibeam.SurveyRequest
 
 var surveyCmd = &cobra.Command{
 	Use:   "survey",
@@ -44,7 +44,7 @@ Data Dissemination initiation, and then download all data files and related file
 			bucket = multibeam.NODDBucket
 		}
 
-		request = multibeam.SurveyRequest{
+		surveyRequest = multibeam.SurveyRequest{
 			Arguments: surveys,
 			S3Client:  S3client,
 			S3Bucket:  bucket,
@@ -55,11 +55,10 @@ Data Dissemination initiation, and then download all data files and related file
 	},
 	Args: cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		internal.Submit(&surveyRequest)
 
-		internal.Submit(&request)
-
-		if request.Error != nil {
-			return request.Error
+		if surveyRequest.Error != nil {
+			return surveyRequest.Error
 		}
 
 		return nil

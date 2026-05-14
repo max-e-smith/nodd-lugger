@@ -2,11 +2,13 @@ package mb
 
 import (
 	"errors"
+	"github.com/max-e-smith/cruise-lug/internal"
 	"github.com/max-e-smith/cruise-lug/internal/common"
+	"github.com/max-e-smith/cruise-lug/internal/multibeam"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"log"
 )
+
+var orderRequest multibeam.OrderRequest
 
 var orderCmd = &cobra.Command{
 	Use:   "order",
@@ -26,32 +28,46 @@ Manifest format:
 }
 	`,
 	Args: cobra.MinimumNArgs(2),
-	PreRun: func(cmd *cobra.Command, args []string) {
-		targetPath, manifestArg := parseMbOrderArgs(cmd, args)
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		targetPath := parseMbOrderArgs(cmd, args)
+		var manifest multibeam.Manifest
 
-		// bind configs
-		fErr := viper.BindPFlag("file", cmd.PersistentFlags().Lookup("file"))
-		if fErr != nil {
-			log.Fatal(fErr)
+		file := cmd.Flag("file")
+		url := cmd.Flag("url")
+
+		if file != nil {
+			manifest = multibeam.ManifestFile{
+				File: file.Value.String(),
+			}
 		}
 
-		uErr := viper.BindPFlag("url", cmd.PersistentFlags().Lookup("url"))
-		if uErr != nil {
-			log.Fatal(uErr)
+		if url != nil {
+			manifest = multibeam.ManifestUrl{
+				Url: url.Value.String(),
+			}
 		}
 
-		// validate manifest is url or file
-		if manifestArg == "" {
-
+		err := manifest.Validate()
+		if err != nil {
+			return err
 		}
-		// if manifest is file validate file exists
 
+		orderRequest = multibeam.OrderRequest{
+			Manifest:  manifest,
+			TargetDir: targetPath,
+			S3Client:  S3client,
+		}
+
+		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		//targetPath, surveys := parseMbSurveyArgs(cmd, args)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		internal.Submit(&orderRequest)
 
-		println("order called")
-		return
+		if orderRequest.Error != nil {
+			return orderRequest.Error
+		}
+
+		return nil
 	},
 }
 
@@ -67,11 +83,11 @@ func init() {
 
 }
 
-func parseMbOrderArgs(cmd *cobra.Command, args []string) (string, string) {
+func parseMbOrderArgs(cmd *cobra.Command, args []string) string {
 	var length = len(args)
-	if length != 2 {
+	if length != 1 {
 		common.UsageError(cmd, errors.New("please specify download manifest file path and a target directory path"))
 	}
 
-	return args[length-1], args[0]
+	return args[0]
 }

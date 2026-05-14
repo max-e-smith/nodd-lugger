@@ -1,4 +1,4 @@
-package download
+package internal
 
 type Request interface {
 	Resolve()
