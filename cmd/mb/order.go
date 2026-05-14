@@ -1,6 +1,8 @@
 package mb
 
 import (
+	"errors"
+	"github.com/max-e-smith/cruise-lug/internal/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -25,6 +27,8 @@ Manifest format:
 	`,
 	Args: cobra.MinimumNArgs(2),
 	PreRun: func(cmd *cobra.Command, args []string) {
+		targetPath, manifestArg := parseMbOrderArgs(cmd, args)
+
 		// bind configs
 		fErr := viper.BindPFlag("file", cmd.PersistentFlags().Lookup("file"))
 		if fErr != nil {
@@ -35,23 +39,16 @@ Manifest format:
 		if uErr != nil {
 			log.Fatal(uErr)
 		}
+
+		// validate manifest is url or file
+		if manifestArg == "" {
+
+		}
+		// if manifest is file validate file exists
+
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		//targetPath, surveys := parseMbSurveyArgs(cmd, args)
-		//parallelDownloads := common.GetWorkersConfig()
-
-		// THIS IS WRONG, EACH ENTRY IN THE MANIFEST WILL NEED TO BE PARSED FOR CLOUD SOURCE / BUCKET AND A NEW
-		// S3 REQUEST (OR OTHER) GENERATED FOR EACH ENTRY
-		//multibeam.Download(
-		//	multibeam.SurveyRequest{
-		//		Request: common.S3Request{
-		//			Arguments:   surveys,
-		//			S3Client:    S3client,
-		//			TargetDir:   targetPath,
-		//			WorkerCount: parallelDownloads,
-		//		},
-		//	},
-		//)
 
 		println("order called")
 		return
@@ -68,4 +65,13 @@ func init() {
 	orderCmd.MarkFlagsOneRequired("file", "url")
 	orderCmd.MarkFlagsMutuallyExclusive("file", "url")
 
+}
+
+func parseMbOrderArgs(cmd *cobra.Command, args []string) (string, string) {
+	var length = len(args)
+	if length != 2 {
+		common.UsageError(cmd, errors.New("please specify download manifest file path and a target directory path"))
+	}
+
+	return args[length-1], args[0]
 }

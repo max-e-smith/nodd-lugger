@@ -3,18 +3,18 @@ package mb
 import (
 	"errors"
 	"fmt"
+	"github.com/max-e-smith/cruise-lug/internal"
 	"github.com/max-e-smith/cruise-lug/internal/common"
-	"github.com/max-e-smith/cruise-lug/internal/download"
-	"github.com/max-e-smith/cruise-lug/internal/download/request/multibeam"
+	"github.com/max-e-smith/cruise-lug/internal/multibeam"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/unicode/norm"
 	"strings"
 )
 
 var source string
-var bucket string
 var target string
 var surveys []string
+var request multibeam.SurveyRequest
 
 var surveyCmd = &cobra.Command{
 	Use:   "survey",
@@ -29,6 +29,7 @@ Data Dissemination initiation, and then download all data files and related file
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		target, surveys = parseMbSurveyArgs(cmd, args)
 		normalizedSource := strings.ToUpper(norm.NFC.String(source))
+		var bucket string
 
 		if normalizedSource != "NODD" && normalizedSource != "NCCF" {
 			common.UsageError(cmd, errors.New("please specify a valid source: NODD | NCCF"))
@@ -43,18 +44,19 @@ Data Dissemination initiation, and then download all data files and related file
 			bucket = multibeam.NODDBucket
 		}
 
-		return nil // continue
-	},
-	Args: cobra.MinimumNArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		request := multibeam.SurveyRequest{
+		request = multibeam.SurveyRequest{
 			Arguments: surveys,
 			S3Client:  S3client,
 			S3Bucket:  bucket,
 			TargetDir: target,
 		}
 
-		download.Submit(&request)
+		return nil // continue
+	},
+	Args: cobra.MinimumNArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		internal.Submit(&request)
 
 		if request.Error != nil {
 			return request.Error
@@ -67,9 +69,7 @@ Data Dissemination initiation, and then download all data files and related file
 func init() {
 	MbCmd.AddCommand(surveyCmd)
 
-	// data source options
 	surveyCmd.Flags().StringVarP(&source, "source", "s", "NODD", "Define source data repository.")
-
 }
 
 func parseMbSurveyArgs(cmd *cobra.Command, args []string) (string, []string) {
